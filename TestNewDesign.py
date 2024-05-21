@@ -11,37 +11,42 @@ def main():
     app.title("Doi ten project vao day")
     app.geometry("750x450")
 
-    # Function to handle downloading
+    # Function to handle downloading with progress callback
     def download_video():
         youtube_link = entry_url.get()
         download_folder = entry_path.get()
         selected_resolution = cbb_resolution.get()
-        print(selected_resolution)
 
         if youtube_link and download_folder:
             try:
-                # Download video
-                get_video = YouTube(youtube_link)
-                # Filter streams based on the selected resolution
-                if selected_resolution == "1080p":
-                    video_stream = get_video.streams.get_highest_resolution()
-                elif selected_resolution == "144p":
-                    video_stream = get_video.streams.get_lowest_resolution()
-                else:
-                    video_stream = get_video.streams.filter(resolution=str(selected_resolution), mime_type="video/mp4",
-                                                            progressive=True).first()
+                # Update progress bar to 0% initially
+                progress_bar.set(0)
+
+                # Download video with progress callback
+                get_video = YouTube(youtube_link, on_progress_callback=progress_callback)
+                video_stream = get_video.streams.filter(res=selected_resolution, mime_type="video/mp4",
+                                                        progressive=True).first()
 
                 if video_stream:
-                    video_stream.download(download_folder)
+                    video_stream.download(output_path=download_folder)
                     # Show success message
                     messagebox.showinfo("Thành công", f"Đã tải xuống và lưu tại\n{download_folder}")
+                    progress_bar.set(0)
                 else:
                     messagebox.showerror("Lỗi", "Không tìm thấy video với độ phân giải được chọn.")
             except Exception as e:
                 # Show error message if download fails
                 messagebox.showerror("Lỗi", f"Lỗi khi tải xuống video: {str(e)}")
+
         else:
             messagebox.showerror("Error", "Chưa nhập URL hoặc Saving path")
+
+    def progress_callback(stream, chunk, bytes_remaining):
+        total_size = stream.filesize
+        bytes_downloaded = total_size - bytes_remaining
+        percentage = bytes_downloaded / total_size * 100
+        progress_bar.set(percentage / 100)
+        app.update_idletasks()  # Update the GUI
 
     def clear_entry():
         entry_url.delete(0, END)
@@ -83,6 +88,11 @@ def main():
     cbb_resolution = customtkinter.CTkComboBox(master=frame2, values=["1080p", "720p", "480p", "360p", "240p", "144p"],
                                                width=421)
     cbb_resolution.place(x=20, y=180)
+
+    # Add progress bar
+    progress_bar = customtkinter.CTkProgressBar(master=frame2, width=421)
+    progress_bar.place(x=20, y=350)
+    progress_bar.set(0)
 
     app.mainloop()
 
