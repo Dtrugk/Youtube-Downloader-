@@ -5,6 +5,7 @@ from tkinter import filedialog, messagebox
 
 set_appearance_mode("Dark")
 
+### This for testing only. Main file is TestNewDesign.py
 
 def main():
     app = CTk()
