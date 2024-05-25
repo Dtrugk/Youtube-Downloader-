@@ -9,7 +9,8 @@ set_appearance_mode("Dark")
 def main():
     app = CTk()
     app.title("Doi ten project vao day")
-    app.geometry("750x450")
+    app.geometry("850x450")
+    app.resizable(False, False)
 
     # Function to handle downloading with progress callback
     def download_video():
@@ -56,12 +57,28 @@ def main():
         entry_path.delete(0, END)
         entry_path.insert(0, download_directory)
 
+    def pause_download():
+        pass
+
+    # Label container for history in scroll frame (contain names of downloaded videos, a progess bar and a pause button)
+    def add_history():
+        label_container = CTkFrame(master=scroll_frame, fg_color="#65B741")
+        label_container.pack(expand=True, fill='both', padx=10, pady=10)
+
+        label = CTkLabel(master=label_container, text="Video name")
+        label.pack(expand=True, pady=1, padx=1)
+
+        btn_pause = CTkButton(master=frame2, text="Pause", height=35, command=pause_download, hover=True, width=189)
+        # Place using grid layout
+        btn_pause.pack(expand=True, pady=1, padx=1)
+
     # Frame 1
     frame1 = CTkFrame(master=app, fg_color="#65B741")
     frame1.pack(expand=True, fill='both', side='left')
 
-    label1 = CTkLabel(master=frame1, text="frame 1")
-    label1.pack(expand=True, pady=1, padx=1)
+    # Create scroll frame in frame1 for history
+    scroll_frame = customtkinter.CTkScrollableFrame(master=frame1, width=100, height=200)
+    scroll_frame.pack(expand=True, fill='both', padx=10, pady=10)
 
     # Frame 2
     frame2 = CTkFrame(master=app)
@@ -82,8 +99,11 @@ def main():
     btn_browse = CTkButton(master=frame2, text="Browse", height=55, width=30, command=browse_directory)
     btn_browse.place(x=382, y=219.75)
 
-    btn_download = CTkButton(master=frame2, text="Download", height=35, command=download_video, hover=True)
+    btn_download = CTkButton(master=frame2, text="Download", height=35, command=download_video, hover=True, width=225)
     btn_download.place(x=20, y=300)
+
+    btn_pause = CTkButton(master=frame2, text="Pause", height=35, command=pause_download, hover=True, width=189)
+    btn_pause.place(x=250, y=300)
 
     cbb_resolution = customtkinter.CTkComboBox(master=frame2, values=["1080p", "720p", "480p", "360p", "240p", "144p"],
                                                width=421)
