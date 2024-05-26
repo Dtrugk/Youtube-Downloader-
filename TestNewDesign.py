@@ -1,5 +1,6 @@
 import customtkinter
 from customtkinter import *
+from Widget import Widget
 from pytube import YouTube
 from tkinter import filedialog, messagebox
 
@@ -28,13 +29,20 @@ def main():
                 video_stream = get_video.streams.filter(res=selected_resolution, mime_type="video/mp4",
                                                         progressive=True).first()
 
+                # Pass video_title to Widget class
+                widget = Widget(master=scroll_frame, video_name=get_video.title, progress_bar=progress_bar,
+                                pause_button=btn_pause)
+                widget.add_history()
+
                 if video_stream:
                     video_stream.download(output_path=download_folder)
                     # Show success message
                     messagebox.showinfo("Thành công", f"Đã tải xuống và lưu tại\n{download_folder}")
+                    # Add video to history
                     progress_bar.set(0)
                 else:
                     messagebox.showerror("Lỗi", "Không tìm thấy video với độ phân giải được chọn.")
+                    widget.delete_widget()
             except Exception as e:
                 # Show error message if download fails
                 messagebox.showerror("Lỗi", f"Lỗi khi tải xuống video: {str(e)}")
@@ -42,7 +50,7 @@ def main():
         else:
             messagebox.showerror("Error", "Chưa nhập URL hoặc Saving path")
 
-    def progress_callback(stream, chunk, bytes_remaining):
+    def progress_callback(stream, bytes_remaining):
         total_size = stream.filesize
         bytes_downloaded = total_size - bytes_remaining
         percentage = bytes_downloaded / total_size * 100
@@ -57,20 +65,8 @@ def main():
         entry_path.delete(0, END)
         entry_path.insert(0, download_directory)
 
-    def pause_download():
-        pass
-
-    # Label container for history in scroll frame (contain names of downloaded videos, a progess bar and a pause button)
-    def add_history():
-        label_container = CTkFrame(master=scroll_frame, fg_color="#65B741")
-        label_container.pack(expand=True, fill='both', padx=10, pady=10)
-
-        label = CTkLabel(master=label_container, text="Video name")
-        label.pack(expand=True, pady=1, padx=1)
-
-        btn_pause = CTkButton(master=frame2, text="Pause", height=35, command=pause_download, hover=True, width=189)
-        # Place using grid layout
-        btn_pause.pack(expand=True, pady=1, padx=1)
+    def clear_history():
+        ...
 
     # Frame 1
     frame1 = CTkFrame(master=app, fg_color="#65B741")
@@ -102,17 +98,20 @@ def main():
     btn_download = CTkButton(master=frame2, text="Download", height=35, command=download_video, hover=True, width=225)
     btn_download.place(x=20, y=300)
 
-    btn_pause = CTkButton(master=frame2, text="Pause", height=35, command=pause_download, hover=True, width=189)
-    btn_pause.place(x=250, y=300)
+    btn_pause = CTkButton(master=frame2, text="Pause", height=35, hover=True, width=189)
 
     cbb_resolution = customtkinter.CTkComboBox(master=frame2, values=["1080p", "720p", "480p", "360p", "240p", "144p"],
                                                width=421)
     cbb_resolution.place(x=20, y=180)
 
     # Add progress bar
-    progress_bar = customtkinter.CTkProgressBar(master=frame2, width=421)
-    progress_bar.place(x=20, y=350)
+    progress_bar = customtkinter.CTkProgressBar(master=frame2, width=421, height=1)
+    # progress_bar.place(x=20, y=350)
     progress_bar.set(0)
+
+    # Clear history button
+    btn_clear_history = CTkButton(master=frame2, text="Clear history", height=35, width=185, hover=True, command=clear_history)
+    btn_clear_history.place(x=255, y=300)
 
     app.mainloop()
 
